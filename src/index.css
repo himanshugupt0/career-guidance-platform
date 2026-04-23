@@ -1,0 +1,146 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    @apply scroll-smooth font-sans;
+  }
+
+  :root {
+    --bg-primary: #ffffff;
+    --bg-secondary: #f8fafc;
+    --bg-card: rgba(255, 255, 255, 0.8);
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --border: #e2e8f0;
+    --shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  }
+
+  .dark {
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-card: rgba(15, 23, 42, 0.8);
+    --text-primary: #f8fafc;
+    --text-secondary: #cbd5e1;
+    --border: #334155;
+    --shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-[var(--bg-primary)] text-[var(--text-primary)] antialiased font-sans;
+    font-feature-settings: 'rlig' 1, 'calt' 1;
+    background-attachment: fixed;
+  }
+
+  /* Text gradients */
+  .bg-gradient-text {
+    @apply bg-clip-text bg-gradient-to-r from-primary-500 via-accent-500 to-cyan-500 text-transparent;
+    font-weight: 800;
+  }
+}
+
+@layer components {
+  .container-page {
+    @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Fancy Glassmorphism Cards */
+  .card {
+    @apply relative rounded-3xl border-0 bg-white/70 backdrop-blur-xl shadow-glass transition-all duration-500 hover:shadow-glow-lg hover:-translate-y-2 hover:scale-[1.02];
+  }
+  .card.glow {
+    @apply ring-2 ring-primary-600/40 shadow-glow-lg;
+  }
+  .dark .card {
+    @apply bg-slate-900/40 backdrop-blur-xl border-slate-800/50 shadow-glass;
+  }
+
+  /* Enhanced Buttons */
+  .btn {
+    @apply relative inline-flex items-center justify-center gap-2 rounded-2xl px-6 py-3 text-sm font-bold uppercase tracking-wide transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 overflow-hidden;
+  }
+  .dark .btn {
+    @apply focus:ring-offset-slate-950;
+  }
+
+  .btn-primary {
+    @apply btn bg-gradient-to-r from-primary-600 via-primary-500 to-accent-500 text-white shadow-lg hover:shadow-glow-lg hover:scale-105 active:scale-95;
+    position: relative;
+    overflow: hidden;
+  }
+  .btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to right, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+  }
+  .btn-primary:hover::before {
+    left: 100%;
+  }
+
+  .btn-ghost {
+    @apply btn bg-white/50 text-slate-700 hover:bg-white backdrop-blur-sm hover:shadow-float dark:bg-slate-900/50 dark:text-slate-200 dark:hover:bg-slate-800;
+  }
+
+  /* Fancy Inputs */
+  .input {
+    @apply w-full rounded-2xl border-2 border-slate-200/50 bg-white/60 px-5 py-4 text-base backdrop-blur-sm outline-none transition-all placeholder:text-slate-400 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/20 shadow-inner hover:shadow-float;
+  }
+  .dark .input {
+    @apply border-slate-800/50 bg-slate-900/50 text-slate-100 placeholder:text-slate-400 focus:border-accent-500 focus:ring-accent-500/20;
+  }
+  .input-label-float {
+    @apply absolute -top-3 left-4 bg-white px-2 text-xs font-bold text-slate-500 dark:bg-slate-950 dark:text-slate-400 transition-colors;
+  }
+
+  /* Shimmer Loader */
+  .shimmer {
+    @apply bg-gradient-to-r from-slate-200 via-slate-300 to-slate-200 bg-[length:200%_100%] animate-shimmer rounded-2xl;
+  }
+  .dark .shimmer {
+    @apply from-slate-700 via-slate-600 to-slate-700;
+  }
+
+  /* Ripple Effect */
+  .ripple {
+    position: relative;
+    overflow: hidden;
+  }
+  .ripple::after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.6);
+    transform: scale(0);
+    animation: ripple-animation 0.6s linear;
+    animation-play-state: paused;
+  }
+  .ripple:active::after {
+    animation-play-state: running;
+  }
+
+  /* Hero Fancy Elements */
+  .hero-glow {
+    @apply absolute inset-0 bg-gradient-to-br from-primary-500/30 via-accent-500/20 to-cyan-500/20 blur-3xl animate-pulse;
+  }
+}
+
+/* Keyframes for ripple */
+@keyframes ripple-animation {
+  to {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
