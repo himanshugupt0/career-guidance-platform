@@ -2,7 +2,7 @@ import axios from "axios"
 import { loadAuth } from "./routes/storage.js"
 
 const api = axios.create({
-  baseURL: 'https://career-guidance-platform-backend-26j6.onrender.com',
+  baseURL: 'http://localhost:5000',
 })
 
 api.interceptors.request.use((config) => {
