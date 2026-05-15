@@ -9,7 +9,7 @@ const jwt = require('jsonwebtoken')
 const app = express()
 app.use(
   cors({
-    origin: "https://your-netlify-app.netlify.app",
+    origin: "https://careerguidanceplatf.netlify.app/",
     credentials: true,
   })
 );
