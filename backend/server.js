@@ -78,7 +78,7 @@ await apiInstance.sendTransacEmail({
   },
   to: [
     {
-      email,
+      email: to,
     },
   ],
   subject: "Your OTP Code",
