@@ -1,4 +1,4 @@
-const nodemailer = require('nodemailer')
+const SibApiV3Sdk = require('sib-api-v3-sdk')
 require('dotenv').config()
 const express = require('express')
 const mongoose = require('mongoose')
@@ -61,29 +61,36 @@ function sanitizeUser(user) {
   }
 }
 
-const transporter = nodemailer.createTransport({
-  host: "smtp-relay.brevo.com",
-  port: 587,
-  secure: false,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-  connectionTimeout: 10000,
-  greetingTimeout: 10000,
-  socketTimeout: 10000,
-  tls: {
-    rejectUnauthorized: false,
-  },
-})
+
 
 async function sendMail({ to, subject, text }) {
-  await transporter.sendMail({
-    from: process.env.EMAIL_USER,
-    to,
-    subject,
-    text,
-  })
+  const defaultClient = SibApiV3Sdk.ApiClient.instance
+
+const apiKey = defaultClient.authentications['api-key']
+apiKey.apiKey = process.env.BREVO_API_KEY
+
+const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi()
+
+await apiInstance.sendTransacEmail({
+  sender: {
+    email: process.env.EMAIL_USER,
+    name: "One Stop Advisor",
+  },
+  to: [
+    {
+      email,
+    },
+  ],
+  subject: "Your OTP Code",
+  htmlContent: `
+    <div style="font-family: Arial, sans-serif;">
+      <h2>Your OTP Code</h2>
+      <p>Your OTP is:</p>
+      <h1>${otp}</h1>
+      <p>This OTP will expire soon.</p>
+    </div>
+  `,
+})
 }
 
 mongoose
