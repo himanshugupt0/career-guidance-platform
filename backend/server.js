@@ -61,37 +61,44 @@ function sanitizeUser(user) {
   }
 }
 
-
-
 async function sendMail({ to, subject, text }) {
-  const defaultClient = SibApiV3Sdk.ApiClient.instance
+  try {
+    const defaultClient = SibApiV3Sdk.ApiClient.instance
 
-const apiKey = defaultClient.authentications['api-key']
-apiKey.apiKey = process.env.BREVO_API_KEY
+    const apiKey = defaultClient.authentications['api-key']
+    apiKey.apiKey = process.env.BREVO_API_KEY
 
-const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi()
+    const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi()
 
-await apiInstance.sendTransacEmail({
-  sender: {
-    email: process.env.EMAIL_USER,
-    name: "One Stop Advisor",
-  },
-  to: [
-    {
-      email: to,
-    },
-  ],
-  subject: "Your OTP Code",
-  htmlContent: `
-    <div style="font-family: Arial, sans-serif;">
-      <h2>Your OTP Code</h2>
-      <p>Your OTP is:</p>
-      <h1>${otp}</h1>
-      <p>This OTP will expire soon.</p>
-    </div>
-  `,
-})
+    await apiInstance.sendTransacEmail({
+      sender: {
+        email: process.env.EMAIL_USER,
+        name: "One Stop Advisor",
+      },
+
+      to: [
+        {
+          email: to,
+        },
+      ],
+
+      subject,
+
+      htmlContent: `
+        <div style="font-family: Arial, sans-serif; padding: 20px;">
+          <h2>${subject}</h2>
+          <p>${text}</p>
+        </div>
+      `,
+    })
+
+    console.log("Email sent successfully to:", to)
+  } catch (error) {
+    console.error("Brevo email error:", error)
+    throw error
+  }
 }
+
 
 mongoose
   .connect(MONGO_URI)
