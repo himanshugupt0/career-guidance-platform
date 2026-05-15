@@ -7,7 +7,12 @@ const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 
 const app = express()
-app.use(cors())
+app.use(
+  cors({
+    origin: "https://your-netlify-app.netlify.app",
+    credentials: true,
+  })
+);
 app.use(express.json())
 
 const PORT = process.env.PORT || 5000
