@@ -11,7 +11,7 @@ app.use(cors({
   origin: [
     'https://careerguidanceplatf.netlify.app',
     'http://localhost:5173',
-    'https://career-guidance-platform-6djn.onrender.com/',
+    'https://career-guidance-platform-6djn.onrender.com',
   ],
   credentials: true,
 }))
