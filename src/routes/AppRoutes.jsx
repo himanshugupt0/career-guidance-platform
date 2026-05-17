@@ -4,6 +4,7 @@ import { ProtectedRoute } from './ProtectedRoute.jsx'
 import { Home } from '../pages/Home.jsx'
 import { Login } from '../pages/Login.jsx'
 import { Signup } from '../pages/Signup.jsx'
+import { ForgotPassword } from '../pages/ForgotPassword.jsx'
 import { DashboardLayout } from '../components/DashboardLayout.jsx'
 import { DashboardHome } from '../pages/DashboardHome.jsx'
 import { AptitudeTest } from '../pages/AptitudeTest.jsx'
@@ -19,6 +20,7 @@ export function AppRoutes() {
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
 
       <Route element={<ProtectedRoute />}>
         <Route element={<DashboardLayout />}>
@@ -36,4 +38,3 @@ export function AppRoutes() {
     </Routes>
   )
 }
-

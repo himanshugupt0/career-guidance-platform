@@ -1,4 +1,4 @@
-import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { Menu, LogOut, User, ChevronDown, Bell } from 'lucide-react'
 import { DarkModeToggle } from './DarkModeToggle.jsx'
 import { useAuth } from '../routes/AuthContext.jsx'
@@ -9,135 +9,99 @@ import api from '../api.js'
 export function Topbar({ onOpenMenu }) {
   const { user, logout, isAuthed, token } = useAuth()
   const navigate = useNavigate()
-  const location = useLocation()
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [unreadCount, setUnreadCount] = useState(0)
 
   useEffect(() => {
-    if (!isAuthed) {
-      setUnreadCount(0)
-      return
-    }
-
-    async function fetchUnread() {
-      try {
-        const res = await api.get('/favorites')
-        setUnreadCount(res.data.unreadCount || 0)
-      } catch {
-        setUnreadCount(0)
-      }
-    }
-
-    fetchUnread()
-  }, [token])
+    if (!isAuthed) { setUnreadCount(0); return }
+    api.get('/favorites').then(res => setUnreadCount(res.data.unreadCount || 0)).catch(() => setUnreadCount(0))
+  }, [token, isAuthed])
 
   return (
-    <motion.div 
-      initial={{ y: -100 }}
+    <motion.div
+      initial={{ y: -60 }}
       animate={{ y: 0 }}
-      className="sticky top-0 z-40 bg-gradient-to-r from-slate-50/95 via-white/98 to-primary-50/30 dark:from-slate-950/95 dark:via-slate-950/98 dark:to-primary-950/30 backdrop-blur-xl border-b border-slate-200/30 shadow-glow dark:border-slate-800/30 shadow-lg"
+      className="sticky top-0 z-40 bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-800/50 shadow-sm"
     >
-      <div className="container-page flex h-16 items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center gap-3">
-          <motion.button
-            whileTap={{ scale: 0.95 }}
-            className="btn-ghost lg:hidden p-2"
+      <div className="flex h-14 sm:h-16 items-center justify-between gap-2 px-3 sm:px-5 lg:px-8 max-w-7xl mx-auto">
+        {/* Left */}
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          <button
+            className="btn-ghost lg:hidden p-2 shrink-0"
             onClick={onOpenMenu}
-            aria-label="Open sidebar menu"
+            aria-label="Open menu"
           >
             <Menu size={20} />
-          </motion.button>
-          <div className="hidden sm:block">
-            <motion.div 
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="font-bold bg-gradient-text text-xl leading-tight"
-            >
+          </button>
+          <div className="min-w-0">
+            <div className="font-bold bg-gradient-text text-base sm:text-lg leading-tight truncate">
               Career Dashboard
-            </motion.div>
-            <div className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+            </div>
+            <div className="text-xs text-slate-500 dark:text-slate-400 hidden sm:block truncate">
               Welcome back{user?.name ? `, ${user.name}` : ''} 👋
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        {/* Right */}
+        <div className="flex items-center gap-1 sm:gap-2 shrink-0">
           <DarkModeToggle compact />
-          
-          <motion.div whileTap={{ scale: 0.95 }} className="relative">
-            <Link to="/dashboard/alerts" className="btn-ghost p-2 ripple">
-              <Bell size={18} className="relative">
-                {unreadCount > 0 && (
-                  <>
-                    <motion.span 
-                      className="absolute -top-1 -right-1 min-w-[18px] h-[18px] rounded-full bg-red-500 text-white text-xs grid place-items-center font-bold shadow-lg border-2 border-white"
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                    >
-                      {unreadCount > 99 ? '99+' : unreadCount}
-                    </motion.span>
-                    <motion.circle 
-                      className="animate-ping absolute -top-1 -right-1 h-[20px] w-[20px] rounded-full bg-red-400 -z-10"
-                      animate={{ scale: [1, 1.3, 1] }} 
-                      transition={{ repeat: Infinity, duration: 2 }}
-                    />
-                  </>
-                )}
-                <span className="sr-only">Notifications ({unreadCount || 0})</span>
-              </Bell>
-            </Link>
-          </motion.div>
 
-          <Link to="/" className="btn-ghost hidden lg:inline-flex">
-            Home
+          {/* Bell */}
+          <Link to="/dashboard/alerts" className="btn-ghost p-2 relative">
+            <Bell size={18} />
+            {unreadCount > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-[16px] rounded-full bg-red-500 text-white text-[10px] grid place-items-center font-bold border border-white dark:border-slate-950">
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </span>
+            )}
+            <span className="sr-only">Alerts</span>
           </Link>
 
-          {/* Avatar Dropdown */}
-          <motion.div 
+          <Link to="/" className="btn-ghost hidden lg:inline-flex text-sm">Home</Link>
+
+          {/* Avatar dropdown */}
+          <div
             className="relative"
             onMouseEnter={() => setShowUserMenu(true)}
             onMouseLeave={() => setShowUserMenu(false)}
           >
-            <motion.button 
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="flex items-center gap-2 rounded-2xl bg-gradient-to-r from-primary-500/10 to-indigo-500/10 p-2 text-sm font-bold text-primary-700 backdrop-blur-sm shadow-float hover:shadow-glow dark:from-primary-400/20 dark:to-indigo-400/20 dark:text-primary-300"
-            >
-              <div className="h-8 w-8 rounded-2xl bg-gradient-to-br from-primary-500 to-indigo-600 grid place-items-center text-white font-bold text-xs uppercase">
+            <button className="flex items-center gap-1.5 rounded-2xl bg-primary-500/10 dark:bg-primary-400/20 px-2 py-1.5 text-sm font-bold text-primary-700 dark:text-primary-300 hover:bg-primary-500/20 transition-all">
+              <div className="h-7 w-7 rounded-xl bg-gradient-to-br from-primary-500 to-indigo-600 grid place-items-center text-white font-bold text-xs uppercase shrink-0">
                 {user?.name?.[0] || 'U'}
               </div>
-              <ChevronDown size={16} className={`transition-transform ${showUserMenu ? 'rotate-180' : ''}`} />
-            </motion.button>
+              <span className="hidden sm:block max-w-[80px] truncate text-xs">{user?.name || 'User'}</span>
+              <ChevronDown size={14} className={`transition-transform shrink-0 ${showUserMenu ? 'rotate-180' : ''}`} />
+            </button>
 
             <AnimatePresence>
               {showUserMenu && (
-                <motion.div 
-                  initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95, y: -8 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                  className="absolute right-0 top-full mt-2 w-48 rounded-2xl bg-white/95 backdrop-blur-xl border border-slate-200/50 shadow-glow-lg py-2 dark:bg-slate-900/95 dark:border-slate-800/50"
+                  exit={{ opacity: 0, scale: 0.95, y: -8 }}
+                  transition={{ duration: 0.15 }}
+                  className="absolute right-0 top-full mt-2 w-44 rounded-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/50 dark:border-slate-800/50 shadow-xl py-1.5 z-50"
                 >
-                  <Link to="/dashboard/profile" className="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800 rounded-xl mx-1">
-                    <User size={16} />
-                    Profile
+                  <Link
+                    to="/dashboard/profile"
+                    className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl mx-1"
+                    onClick={() => setShowUserMenu(false)}
+                  >
+                    <User size={15} /> Profile
                   </Link>
                   <button
-                    onClick={() => {
-                      logout()
-                      navigate('/login')
-                    }}
-                    className="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800 rounded-xl mx-1"
+                    onClick={() => { logout(); navigate('/login') }}
+                    className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-xl mx-1"
                   >
-                    <LogOut size={16} />
-                    Logout
+                    <LogOut size={15} /> Logout
                   </button>
                 </motion.div>
               )}
             </AnimatePresence>
-          </motion.div>
+          </div>
         </div>
       </div>
     </motion.div>
   )
 }
-

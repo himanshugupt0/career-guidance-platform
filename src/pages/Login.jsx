@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { AlertCircle, Loader2, Mail } from 'lucide-react'
+import { AlertCircle, Loader2, Mail, Eye, EyeOff } from 'lucide-react'
 import { AuthLayout } from '../components/AuthLayout.jsx'
 import { useAuth } from '../routes/AuthContext.jsx'
 
@@ -8,9 +8,10 @@ export function Login() {
   const navigate = useNavigate()
   const { requestLoginOtp, verifyLoginOtp } = useAuth()
 
-  const [step, setStep] = useState('credentials') // credentials | otp
+  const [step, setStep] = useState('credentials')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [otp, setOtp] = useState('')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -21,42 +22,28 @@ export function Login() {
     e.preventDefault()
     setError('')
     setInfo('')
-
-    if (!email || !password) {
-      setError('Email and password are required.')
-      return
-    }
-
+    if (!email || !password) { setError('Email and password are required.'); return }
     setSaving(true)
     try {
       await requestLoginOtp({ email, password })
       setLockedEmail(email)
       setStep('otp')
-      setInfo(`We sent a login OTP to ${email}.`)
+      setInfo(`OTP sent to ${email}.`)
     } catch (err) {
       setError(err?.response?.data?.message || err?.message || 'Failed to send OTP.')
-    } finally {
-      setSaving(false)
-    }
+    } finally { setSaving(false) }
   }
 
   async function verifyAndLogin(e) {
     e.preventDefault()
     setError('')
     setSaving(true)
-
     try {
-      await verifyLoginOtp({
-        email: lockedEmail || email,
-        otp,
-      })
-
-      navigate('/dashboard', { replace: true })
+      const loggedInUser = await verifyLoginOtp({ email: lockedEmail || email, otp })
+      navigate(!loggedInUser?.grade || !loggedInUser?.state ? '/dashboard/profile' : '/dashboard', { replace: true })
     } catch (err) {
       setError(err?.response?.data?.message || err?.message || 'OTP verification failed.')
-    } finally {
-      setSaving(false)
-    }
+    } finally { setSaving(false) }
   }
 
   function changeEmail() {
@@ -70,109 +57,68 @@ export function Login() {
   return (
     <AuthLayout
       title="Welcome back"
-      subtitle="Login with password first, then verify with OTP."
-      footer={
-        <>
-          New here?{' '}
-          <Link className="font-bold text-indigo-600" to="/signup">
-            Create account
-          </Link>
-        </>
-      }
+      subtitle="Login with password, then verify with OTP."
+      footer={<>New here? <Link className="font-bold text-indigo-600" to="/signup">Create account</Link></>}
     >
-      {info ? (
-        <div className="mb-4 flex items-start gap-2 rounded-xl border border-indigo-200 bg-indigo-50 p-3 text-sm text-indigo-700">
-          <Mail size={18} className="mt-0.5" />
-          <div className="min-w-0">{info}</div>
+      {info && (
+        <div className="mb-4 flex items-start gap-2 rounded-xl border border-indigo-200 bg-indigo-50 p-3 text-sm text-indigo-700 dark:border-indigo-900/40 dark:bg-indigo-950/30 dark:text-indigo-300">
+          <Mail size={18} className="mt-0.5 shrink-0" /><div>{info}</div>
         </div>
-      ) : null}
-
-      {error ? (
+      )}
+      {error && (
         <div className="mb-4 flex items-start gap-2 rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700 dark:border-rose-900/40 dark:bg-rose-950/30 dark:text-rose-200">
-          <AlertCircle size={18} className="mt-0.5" />
-          <div className="min-w-0">
-            <div className="font-extrabold">Couldn’t log in</div>
-            <div className="mt-0.5">{error}</div>
-          </div>
+          <AlertCircle size={18} className="mt-0.5 shrink-0" />
+          <div><div className="font-extrabold">Couldn't log in</div><div className="mt-0.5">{error}</div></div>
         </div>
-      ) : null}
+      )}
 
       {step === 'credentials' ? (
         <form className="space-y-4" onSubmit={sendOtp}>
           <div>
-            <label className="text-sm font-bold text-slate-700 dark:text-slate-200">
-              Email
-            </label>
-            <input
-              className="input mt-1"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
-              type="email"
-              autoComplete="email"
-            />
+            <label className="text-sm font-bold text-slate-700 dark:text-slate-200">Email</label>
+            <input className="input mt-1" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" type="email" autoComplete="email" />
           </div>
-
           <div>
-            <label className="text-sm font-bold text-slate-700 dark:text-slate-200">
-              Password
-            </label>
-            <input
-              className="input mt-1"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Your password"
-              type="password"
-              autoComplete="current-password"
-            />
+            <label className="text-sm font-bold text-slate-700 dark:text-slate-200">Password</label>
+            <div className="relative mt-1">
+              <input
+                className="input pr-10"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                placeholder="Your password"
+                type={showPassword ? 'text' : 'password'}
+                autoComplete="current-password"
+              />
+              <button
+                type="button"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                onClick={() => setShowPassword(v => !v)}
+                tabIndex={-1}
+              >
+                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
           </div>
-
           <button type="submit" className="btn-primary w-full" disabled={saving}>
-            {saving ? (
-              <>
-                <Loader2 className="animate-spin" size={16} />
-                Sending OTP…
-              </>
-            ) : (
-              'Send OTP'
-            )}
+            {saving ? <><Loader2 className="animate-spin" size={16} /> Sending OTP…</> : 'Send OTP'}
           </button>
+          <Link to="/forgot-password" className="block text-center text-sm font-bold text-indigo-600 hover:underline">
+            Forgot password?
+          </Link>
         </form>
       ) : (
         <form className="space-y-4" onSubmit={verifyAndLogin}>
           <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700 dark:border-slate-800 dark:bg-slate-950/30 dark:text-slate-200">
             OTP sent to <span className="font-bold">{lockedEmail}</span>
           </div>
-
           <div>
-            <label className="text-sm font-bold text-slate-700 dark:text-slate-200">
-              OTP
-            </label>
-            <input
-              className="input mt-1 tracking-[0.35em]"
-              value={otp}
-              onChange={(e) => setOtp(e.target.value)}
-              placeholder="123456"
-              type="text"
-              inputMode="numeric"
-              autoComplete="one-time-code"
-            />
+            <label className="text-sm font-bold text-slate-700 dark:text-slate-200">OTP</label>
+            <input className="input mt-1 tracking-[0.35em]" value={otp} onChange={e => setOtp(e.target.value)} placeholder="123456" type="text" inputMode="numeric" autoComplete="one-time-code" />
           </div>
-
           <button type="submit" className="btn-primary w-full" disabled={saving}>
-            {saving ? (
-              <>
-                <Loader2 className="animate-spin" size={16} />
-                Verifying…
-              </>
-            ) : (
-              'Verify & Login'
-            )}
+            {saving ? <><Loader2 className="animate-spin" size={16} /> Verifying…</> : 'Verify & Login'}
           </button>
-
-          <button type="button" className="btn-ghost w-full" onClick={changeEmail}>
-            Change email
-          </button>
+          <button type="button" className="btn-ghost w-full" onClick={changeEmail}>Change email</button>
         </form>
       )}
     </AuthLayout>
